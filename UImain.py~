@@ -99,8 +99,7 @@ class Window(fist.Ui_MainWindow, QtWidgets.QMainWindow):
                                 (data["当前工单状态"] == "已评价"))]
 
         # 当期响应及时工单：根据“时间段”判断“列AC-响应时间”包含在“开始时间”及“结束时间”之间，且“列AD-受理至响应间隔时长”的值<0.51,的excel行数（即工单数）
-        data_response = data[(data["响应时间"] >= dateStart) & (data["响应时间"] <= dateEnd) &
-                             (data["受理至响应间隔时长(小时)\n响应时间 - 受理时间"].apply(lambda x: 0.0 if x == '' else float(x)) < 0.51)]
+        data_response = data[(data["响应时间"] >= dateStart) & (data["响应时间"] <= dateEnd) & data["受理至响应间隔时长(小时)\n响应时间 - 受理时间"] < 0.51]
 
         data_all = data[(data["响应时间"] >= dateStart) & (data["响应时间"] <= dateEnd)]
 

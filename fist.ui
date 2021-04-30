@@ -32,10 +32,32 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
-       <widget class="QDateEdit" name="dateStart"/>
+       <widget class="QDateEdit" name="dateStart">
+        <property name="dateTime">
+         <datetime>
+          <hour>0</hour>
+          <minute>0</minute>
+          <second>0</second>
+          <year>2021</year>
+          <month>1</month>
+          <day>1</day>
+         </datetime>
+        </property>
+       </widget>
       </item>
       <item>
-       <widget class="QDateEdit" name="dateEnd"/>
+       <widget class="QDateEdit" name="dateEnd">
+        <property name="dateTime">
+         <datetime>
+          <hour>0</hour>
+          <minute>0</minute>
+          <second>0</second>
+          <year>2021</year>
+          <month>1</month>
+          <day>1</day>
+         </datetime>
+        </property>
+       </widget>
       </item>
       <item>
        <spacer name="horizontalSpacer_2">
