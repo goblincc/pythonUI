@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1098</width>
+    <height>584</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="pushButton">
+        <property name="text">
+         <string>浏览</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="lineEdit"/>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <widget class="QDateEdit" name="dateStart"/>
+      </item>
+      <item>
+       <widget class="QDateEdit" name="dateEnd"/>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="groupBox">
+      <property name="title">
+       <string>分组</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QComboBox" name="comboBox">
+           <item>
+            <property name="text">
+             <string>项目分期</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>维保工程师</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>楼栋</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>项目</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>城市</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>大区</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QPushButton" name="pushButton_2">
+        <property name="text">
+         <string>计算</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_3">
+        <property name="text">
+         <string>导出</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QTableWidget" name="tableWidget">
+      <column>
+       <property name="text">
+        <string>分组名称</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>当期需处理(条)</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>当期新增(条)</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>当期关闭(条)</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>当期未关闭(条)</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>当期关闭率</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>当年累计关闭率</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>总体累计关闭率</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>当期上门及时率</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>当期施工完成及时率</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>平均关单时长(天)</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>当期响应及时率</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1098</width>
+     <height>23</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
