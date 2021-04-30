@@ -98,6 +98,7 @@ class Window(fist.Ui_MainWindow, QtWidgets.QMainWindow):
                                 (data["当前工单状态"] == "已关闭") |
                                 (data["当前工单状态"] == "已评价"))]
 
+        print("data_all_close", data_all_close['当前工单状态']. count())
         # 当期响应及时工单：根据“时间段”判断“列AC-响应时间”包含在“开始时间”及“结束时间”之间，且“列AD-受理至响应间隔时长”的值<0.51,的excel行数（即工单数）
         data_response = data[(data["响应时间"] >= dateStart) & (data["响应时间"] <= dateEnd) &
                              (data["受理至响应间隔时长(小时)\n响应时间 - 受理时间"].apply(lambda x: 0.0 if x == '' else float(x)) < 0.51)]
@@ -105,7 +106,7 @@ class Window(fist.Ui_MainWindow, QtWidgets.QMainWindow):
         data_all = data[(data["响应时间"] >= dateStart) & (data["响应时间"] <= dateEnd)]
 
         # 当期上门及时工单: 根据“时间段”判断“列AH - 预约上门时间”包含在“开始时间”及“结束时间”之间，且“列AK - 上门超时”的值 < 0.01, 的excel行数（即工单数）
-        data_indoor = data[(data["预约上门时间"] >= dateStart) & (data["预约上门时间"] <= dateEnd) & data["上门超时"] < 0.01]
+        data_indoor = data[(data["预约上门时间"] >= dateStart) & (data["预约上门时间"] <= dateEnd) & data["上门超时（小时）\n实际上门时间 - 预约上门时间"] < 0.01]
 
         # 当期上门及时率=⑫当期上门及时工单/当期预约上门工单（逻辑：根据“时间段”判断“列AH-预约上门时间”包含在“开始时间”及“结束时间”之间的excel行数（即工单数））
         data_indoor_all = data[(data["预约上门时间"] >= dateStart) & (data["预约上门时间"] <= dateEnd)]
@@ -113,15 +114,15 @@ class Window(fist.Ui_MainWindow, QtWidgets.QMainWindow):
         print("data_indoor_all", data_indoor_all['当前工单状态'].count())
         # 当期施工及时完成工单 = 根据“时间段”判断“列AM - 实际完成时间”包含在“开始时间”及“结束时间”之间，且“列AM - 实际完成时间的值”减去“列AL - 预计完成时间的值”=值＜0.1, 的excel行数（即工单数）
         data_finish = data[(data["实际完成时间"] >= dateStart) & (data["实际完成时间"] <= dateEnd) &
-                           ((data[data["实际完成时间"].isna() == False]["实际完成时间"] .apply(self.date2Timestamp) -
-                             data[data["预计完成时间"].isna() == False]["预计完成时间"] .apply(self.date2Timestamp)) < 0.1)]
+                           ((data[data["实际完成时间"] != '']["实际完成时间"] .apply(self.date2Timestamp) -
+                             data[data["预计完成时间"] != '']["预计完成时间"] .apply(self.date2Timestamp)) < 0.1)]
 
         # 当期施工完成及时率 =⑭当期施工及时完成工单 /（根据“时间段”判断“列AM - 实际完成时间”包含在“开始时间”及“结束时间”之间的excel行数（即工单数））
         data_finish_all = data[(data["实际完成时间"] >= dateStart) & (data["实际完成时间"] <= dateEnd)]
 
         # 当期维修关闭总时长
-        data_time_notnull = data[((data["业主关闭时间"].isna() == False) | (data["非正常关闭时间"].isna() == False) | (data["强制关闭时间"].isna() == False)) &
-             (data["报事时间"].isna() == False)]
+        data_time_notnull = data[((data["业主关闭时间"] != '') | (data["非正常关闭时间"] != '') | (data["强制关闭时间"] != '')) &
+             (data["报事时间"] != '')]
 
         data_dur = data_time_notnull["业主关闭时间"].apply(lambda x: 0 if x == '' else self.date2Timestamp(x)) + \
                     data_time_notnull["非正常关闭时间"].apply(lambda x: 0 if x == '' else self.date2Timestamp(x)) + \
@@ -132,7 +133,7 @@ class Window(fist.Ui_MainWindow, QtWidgets.QMainWindow):
         for group in cal_group:
             item = []
             print(group)
-            item.append(cal_group_name)
+            item.append(group)
             # 1.当前未关闭
             data_cur_tmp = data_cur[data_cur[cal_group_name] == group]
             cur_not_close = data_cur_tmp["当前工单状态"].count()
