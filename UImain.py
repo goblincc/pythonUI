@@ -15,13 +15,16 @@ class Window(fist.Ui_MainWindow, QtWidgets.QMainWindow):
         self.setupUi(self)
         self.pushButton.clicked.connect(self.msg)#一个按钮的点击事件，响应函数为 def msg(self):
         self.pushButton_2.clicked.connect(self.calTableValue)
+        self.lineEdit.setAcceptDrops(True)
+
 
     def msg(self):
         filePath, filetype = QtWidgets.QFileDialog.getOpenFileName(self, "选取文件", "./", "*.*")
-        print(filePath)
-        print(filetype)
         self.path = filePath
+        self.lineEdit.setText(filePath)
 
+    def getLineEdit(self):
+        return self.lineEdit.text()
 
     def string2Month(self, strs):
         date = datetime.datetime.strptime(strs, '%Y-%m-%d %H:%M:%S')
@@ -38,7 +41,10 @@ class Window(fist.Ui_MainWindow, QtWidgets.QMainWindow):
         timearray = time.strptime(strs, "%Y-%m-%d %H:%M:%S")
         return int(time.mktime(timearray))
 
+
     def calTableValue(self):
+        self.tableWidget.setRowCount(0)
+        self.tableWidget.clearContents()
         # keep_default_na=False 防止出现nan值
         data = pd.read_excel(self.path, keep_default_na=False)
         dateStart = str(self.dateStart.dateTime().toPyDateTime())
@@ -106,7 +112,8 @@ class Window(fist.Ui_MainWindow, QtWidgets.QMainWindow):
         data_all = data[(data["响应时间"] >= dateStart) & (data["响应时间"] <= dateEnd)]
 
         # 当期上门及时工单: 根据“时间段”判断“列AH - 预约上门时间”包含在“开始时间”及“结束时间”之间，且“列AK - 上门超时”的值 < 0.01, 的excel行数（即工单数）
-        data_indoor = data[(data["预约上门时间"] >= dateStart) & (data["预约上门时间"] <= dateEnd) & data["上门超时（小时）\n实际上门时间 - 预约上门时间"] < 0.01]
+        data_indoor = data[(data["预约上门时间"] >= dateStart) & (data["预约上门时间"] <= dateEnd) & (data["上门超时（小时）\n实际上门时间 - 预约上门时间"]
+                           .apply(lambda x: 0.0 if x == '' else float(x)) < 0.01)]
 
         # 当期上门及时率=⑫当期上门及时工单/当期预约上门工单（逻辑：根据“时间段”判断“列AH-预约上门时间”包含在“开始时间”及“结束时间”之间的excel行数（即工单数））
         data_indoor_all = data[(data["预约上门时间"] >= dateStart) & (data["预约上门时间"] <= dateEnd)]
@@ -123,11 +130,6 @@ class Window(fist.Ui_MainWindow, QtWidgets.QMainWindow):
         # 当期维修关闭总时长
         data_time_notnull = data[((data["业主关闭时间"] != '') | (data["非正常关闭时间"] != '') | (data["强制关闭时间"] != '')) &
              (data["报事时间"] != '')]
-
-        data_dur = data_time_notnull["业主关闭时间"].apply(lambda x: 0 if x == '' else self.date2Timestamp(x)) + \
-                    data_time_notnull["非正常关闭时间"].apply(lambda x: 0 if x == '' else self.date2Timestamp(x)) + \
-                    data_time_notnull["强制关闭时间"].apply(lambda x: 0 if x == '' else self.date2Timestamp(x)) - \
-                    data_time_notnull["报事时间"].apply(lambda x: 0 if x == '' else self.date2Timestamp(x))
 
         items = []
         for group in cal_group:
@@ -146,7 +148,7 @@ class Window(fist.Ui_MainWindow, QtWidgets.QMainWindow):
             data_close_tmp = data_close[data_close[cal_group_name] == group]
             cur_close = data_close_tmp["当前工单状态"].count()
 
-            print(cur_close)
+            # print(cur_close)
             # 4.当前需处理
             cur_need_do = cur_not_close + cur_close
 
@@ -184,19 +186,38 @@ class Window(fist.Ui_MainWindow, QtWidgets.QMainWindow):
             data_indoor_all_tmp = data_indoor_all[data_indoor_all[cal_group_name] == group]
             indoor_all_cnt = data_indoor_all_tmp["当前工单状态"].count()
             indoor_rate = round(indoor_cnt/indoor_all_cnt, 4)
+            print("indoor_cnt:", indoor_cnt, "indoor_all_cnt", indoor_all_cnt)
 
             # 14.当期施工及时完成工单
             data_finish_tmp = data_finish[data_finish[cal_group_name] == group]
             finish_cnt = data_finish_tmp["当前工单状态"].count()
 
+
             # 15.当期施工完成及时率
             data_finish_all_tmp = data_finish_all[data_finish_all[cal_group_name] == group]
             finish_cnt_all = data_finish_all_tmp["当前工单状态"].count()
-            finish_rate = round(finish_cnt/finish_cnt_all, 4)
+            finish_rate = 0
+            if finish_cnt_all != 0:
+                finish_rate = round(finish_cnt / finish_cnt_all, 4)
+            else:
+                pass
+
+            print("finish_cnt:", finish_cnt, "finish_cnt_all", finish_cnt_all)
 
             # 16.当期维修关闭总时长 平均时长
+            data_time_notnull_tmp = data_time_notnull[data_time_notnull[cal_group_name] == group]
+            data_dur = data_time_notnull_tmp["业主关闭时间"].apply(lambda x: 0 if x == '' else self.date2Timestamp(x)) + \
+                       data_time_notnull_tmp["非正常关闭时间"].apply(lambda x: 0 if x == '' else self.date2Timestamp(x)) + \
+                       data_time_notnull_tmp["强制关闭时间"].apply(lambda x: 0 if x == '' else self.date2Timestamp(x)) - \
+                       data_time_notnull_tmp["报事时间"].apply(lambda x: 0 if x == '' else self.date2Timestamp(x))
             dur_list = data_dur.tolist()
-            dur = sum(dur_list)/len(dur_list)/1000/60
+            print("dur_list", dur_list)
+            dur = 0
+            if len(dur_list) != 0:
+                dur = round(sum(dur_list)/len(dur_list)/1000/60, 2)
+            else:
+                pass
+
 
             item.append(cur_need_do)
             item.append(cur_increase)
