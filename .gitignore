@@ -1,2 +1,5 @@
 .csv
 .idea/*
+UImain.spec
+build/*
+dist/*
