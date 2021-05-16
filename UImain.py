@@ -1,24 +1,61 @@
 import sys
 import fist
-from PyQt5.QtWidgets import QApplication, QMainWindow, QHeaderView, QTableWidgetItem
-from PyQt5 import QtWidgets
+import second
+from PyQt5.QtWidgets import QApplication, QMainWindow, QHeaderView, QTableWidgetItem, QLineEdit, QFormLayout,QComboBox,QPushButton
+from PyQt5 import QtWidgets, QtCore, QtGui
 import pandas as pd
 import datetime
 import time
 
-class Window(fist.Ui_MainWindow, QtWidgets.QMainWindow):
+class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
+        self.i = 1
         self.setupUi(self)
-        self.pushButton.clicked.connect(self.msg)#一个按钮的点击事件，响应函数为 def msg(self):
+        # 一个按钮的点击事件，响应函数为 def msg(self):
+        self.pushButton.clicked.connect(self.msg)
         self.pushButton_2.clicked.connect(self.calTableValue)
         self.lineEdit.setAcceptDrops(True)
+        self.pushButton_4.clicked.connect(self.add)
+        self.pushButton_5.clicked.connect(self.fixDele)
+        self.pushButton_6.clicked.connect(self.save)
+
+    def save(self):
+        print(self.tab_2.children())
+        for j in range(self.i):
+            if j != 0:
+                line1 = self.tab_2.findChild(QLineEdit, str(j) + "_lineEdit")
+                line2 = self.tab_2.findChild(QLineEdit, str(j) + "_2lineEdit")
+                print(isinstance(line2, QLineEdit))
+                # print("line1.text():", line1.text())
+            else:
+                pass
+        pass
+
+
+    def fixDele(self):
+        self.lineEdit_2.deleteLater()
+        self.lineEdit_3.deleteLater()
+        self.comboBox.deleteLater()
+        self.pushButton_5.deleteLater()
+
+    def delete(self, n1, n2, n3, n4):
+        qts1 = self.tab_2.findChild(QLineEdit, n1)
+        qts2 = self.tab_2.findChild(QLineEdit, n2)
+        qts3 = self.tab_2.findChild(QComboBox, n3)
+        qts4 = self.tab_2.findChild(QPushButton, n4)
+        # print(isinstance(qts1, QLineEdit))
+        qts1.deleteLater()
+        qts2.deleteLater()
+        qts3.deleteLater()
+        qts4.deleteLater()
 
 
     def msg(self):
         filePath, filetype = QtWidgets.QFileDialog.getOpenFileName(self, "选取文件", "./", "*.*")
         self.path = filePath
         self.lineEdit.setText(filePath)
+        self.data = pd.read_excel(self.path, keep_default_na=False)
 
     def getLineEdit(self):
         return self.lineEdit.text()
@@ -39,17 +76,52 @@ class Window(fist.Ui_MainWindow, QtWidgets.QMainWindow):
         return int(time.mktime(timearray))
 
 
+    def add(self):
+        lineEdit = QtWidgets.QLineEdit(self.tab_2)
+        lineEdit.setGeometry(QtCore.QRect(20, self.i * 30 + 60, 130, 22))
+        lineEdit.setObjectName(str(self.i) + "_lineEdit")
+        lineEdit.setFixedWidth(130)
+
+        lineEdit2 = QtWidgets.QLineEdit(self.tab_2)
+        lineEdit2.setGeometry(QtCore.QRect(160, self.i * 30 + 60, 130, 22))
+        lineEdit2.setObjectName(str(self.i) + "_2lineEdit")
+        lineEdit2.setFixedWidth(130)
+
+        comboBox = QtWidgets.QComboBox(self.tab_2)
+        comboBox.setGeometry(QtCore.QRect(300, self.i * 30 + 60, 67, 23))
+        comboBox.setObjectName(str(self.i) + "comboBox")
+        comboBox.addItem("楼栋")
+        comboBox.addItem("项目分期")
+
+        pushButton = QtWidgets.QPushButton(self.tab_2)
+        pushButton.setGeometry(QtCore.QRect(380, self.i * 30 + 60, 75, 23))
+        pushButton.setObjectName(str(self.i) +"pushButton_5")
+        pushButton.setText("删除")
+
+        lineEdit.show()
+        lineEdit2.show()
+        comboBox.show()
+        pushButton.show()
+        self.i += 1
+        n1 = lineEdit.objectName()
+        n2 = lineEdit2.objectName()
+        n3 = comboBox.objectName()
+        n4 = pushButton.objectName()
+        pushButton.clicked.connect(lambda: self.delete(n1, n2, n3, n4))
+
+
     def calTableValue(self):
         self.tableWidget.setRowCount(0)
         self.tableWidget.clearContents()
         # keep_default_na=False 防止出现nan值
-        data = pd.read_excel(self.path, keep_default_na=False)
+        data = self.data
         dateStart = str(self.dateStart.dateTime().toPyDateTime())
         dateEnd = str(self.dateEnd.dateTime().toPyDateTime())
-        cal_group_name = self.comboBox.currentText()
+        select = self.comboBox_2.currentText()
+        cal_group_name = self.comboBox_3.currentText()
         # cal_group = np.unique(data[cal_group_name].values).tolist()
         cal_group = set(data[cal_group_name].values)
-        print(cal_group)
+        print("cal_group:",cal_group)
         print(dateEnd)
         # 当期未关闭：根据“时间段”判断“列AA-报事时间”早于“结束时间”， 且“列L-当前工单状态”为“方案已批准”、“方案制定中”、“施工完成”、“施工中”、“已响应”的excel行数（即工单数）
         data_cur = data[(data["报事时间"] <= dateEnd) & ((data["当前工单状态"] == "方案已批准") |
@@ -212,10 +284,9 @@ class Window(fist.Ui_MainWindow, QtWidgets.QMainWindow):
             print("dur_list", dur_list)
             dur = 0
             if len(dur_list) != 0:
-                dur = round(sum(dur_list)/len(dur_list)/1000/60, 2)
+                dur = round(sum(dur_list)/len(dur_list)/1000/60/60, 2)
             else:
                 pass
-
 
             item.append(cur_need_do)
             item.append(cur_increase)
@@ -237,6 +308,7 @@ class Window(fist.Ui_MainWindow, QtWidgets.QMainWindow):
             for j in range(len(item)):
                 item = QTableWidgetItem(str(items[i][j]))
                 self.tableWidget.setItem(row, j, item)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
