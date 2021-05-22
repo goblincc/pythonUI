@@ -1,36 +1,118 @@
 import sys
-import fist
+import openpyxl
 import second
-from PyQt5.QtWidgets import QApplication, QMainWindow, QHeaderView, QTableWidgetItem, QLineEdit, QFormLayout,QComboBox,QPushButton
+from PyQt5.QtWidgets import QApplication, QMainWindow, QHeaderView, QProgressBar,QTableWidgetItem,QMessageBox, QLineEdit, QFormLayout,QComboBox,QPushButton
 from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5.QtCore import QBasicTimer
 import pandas as pd
 import datetime
 import time
+import os
 
 class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
         self.i = 1
+        self.k = 0
         self.setupUi(self)
         # 一个按钮的点击事件，响应函数为 def msg(self):
         self.pushButton.clicked.connect(self.msg)
         self.pushButton_2.clicked.connect(self.calTableValue)
         self.lineEdit.setAcceptDrops(True)
+        self.pushButton_3.clicked.connect(self.resultExport)
         self.pushButton_4.clicked.connect(self.add)
         self.pushButton_5.clicked.connect(self.fixDele)
         self.pushButton_6.clicked.connect(self.save)
+        self.pushButton_7.clicked.connect(self.submit)
+        self.pushButton_8.clicked.connect(self.export)
+
+    def resultExport(self):
+        path = QtWidgets.QFileDialog.getExistingDirectory()
+        txt = self.comboBox_3.currentText()
+        savePath = path + "/" + txt + "_计算结果.xlsx"
+        try:
+            if os.path.exists(savePath):
+                os.remove(savePath)
+        except:
+            self.file_except()
+        else:
+            pd.DataFrame(self.pd_dict).to_excel(savePath)
+
+    def export(self):
+        path = QtWidgets.QFileDialog.getExistingDirectory()
+        savePath = path + "/替换后文件导出.xlsx"
+        try:
+            if os.path.exists(savePath):
+                os.remove(savePath)
+        except:
+            self.file_except()
+        else:
+            self.data.to_excel(savePath)
+
+
+    def file_except(self):  # 消息：警告
+        reply = QMessageBox.warning(self, "提示", "文件正在使用")
+
+
+    def submit(self):
+        comboBox = self.comboBox_4.currentText()
+        line = self.lineEdit_4.text()
+
+        lineEdit = QtWidgets.QLineEdit(self.tab_3)
+        lineEdit.setGeometry(QtCore.QRect(10, self.k * 30 + 80, 200, 22))
+        lineEdit.setObjectName(str(self.k) + "j_lineEdit")
+        lineEdit.setText(comboBox + "#" + line)
+        lineEdit.setFixedWidth(350)
+
+        pushButton = QtWidgets.QPushButton(self.tab_3)
+        pushButton.setGeometry(QtCore.QRect(380, self.k * 30 + 80, 75, 23))
+        pushButton.setObjectName(str(self.k) + "j_pushButton")
+        pushButton.setText("删除")
+
+        lineEdit.show()
+        pushButton.show()
+
+        self.k += 1
+        n1 = lineEdit.objectName()
+        n2 = pushButton.objectName()
+        pushButton.clicked.connect(lambda: self.delete_tab3(n1, n2))
 
     def save(self):
-        print(self.tab_2.children())
+        # 替换数据条数记数
+        m_cnt = 0
+        # 设置集中整改条数记数
+        n_cnt = 0
+        # 规则替换
         for j in range(self.i):
             if j != 0:
-                line1 = self.tab_2.findChild(QLineEdit, str(j) + "_lineEdit")
-                line2 = self.tab_2.findChild(QLineEdit, str(j) + "_2lineEdit")
-                print(isinstance(line2, QLineEdit))
-                # print("line1.text():", line1.text())
+                line1 = self.tab_2.findChild(QLineEdit, str(j) + "_lineEdit").text()
+                line2 = self.tab_2.findChild(QLineEdit, str(j) + "_2lineEdit").text()
+                select = self.tab_2.findChild(QComboBox, str(j) + "comboBox").currentText()
             else:
-                pass
-        pass
+                line1 = self.lineEdit_2.text()
+                line2 = self.lineEdit_3.text()
+                select = self.comboBox.currentText()
+
+            if select == "楼栋":
+                m_cnt += self.data[self.data['楼栋'] == line1]['楼栋'].count()
+                self.data['楼栋'] = self.data['楼栋'].apply(lambda x: line2 if x == line1 else x)
+            elif select == "项目分期":
+                line2s = line2.split("#")
+                m_cnt += self.data[(self.data['项目'] + self.data['项目分期']) == line1]['项目分期'].count()
+                self.data["项目"] = self.data.apply(lambda x: line2s[0] if (x['项目'] + x['项目分期']) == line1 else x['项目'], axis=1)
+                self.data["项目分期"] = self.data.apply(lambda x: line2s[1] if (x['项目'] + x['项目分期']) == line1 else x['项目分期'], axis=1)
+        # 集中整改替换
+        for l in range(self.k):
+            line = self.tab_3.findChild(QLineEdit, str(l) + "j_lineEdit").text()
+            lines = line.split('#')
+            if lines[0] == '楼栋':
+                self.data['维保阶段名称'] = self.data['维保阶段名称'].apply(lambda x: '集中整改期' if x == lines[1] else x)
+                n_cnt += self.data[self.data['楼栋'] == lines[1]]['楼栋'].count()
+            elif lines[0] == '项目分期':
+                self.data['维保阶段名称'] = self.data.apply(lambda x: '集中整改期' if (x['项目'] + '#' + x['项目分期']) == line else x['维保阶段名称'], axis=1)
+                n_cnt += self.data[(self.data['项目'] + '#' + self.data['项目分期']) == line]['项目分期'].count()
+        QMessageBox.information(self, "信息", "替换数据:" + str(m_cnt) + ";设置集中整改:" + str(n_cnt))
+
 
 
     def fixDele(self):
@@ -38,6 +120,14 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
         self.lineEdit_3.deleteLater()
         self.comboBox.deleteLater()
         self.pushButton_5.deleteLater()
+
+
+    def delete_tab3(self, n1, n2):
+        qts1 = self.tab_3.findChild(QLineEdit, n1)
+        qts2 = self.tab_3.findChild(QPushButton, n2)
+        qts1.deleteLater()
+        qts2.deleteLater()
+
 
     def delete(self, n1, n2, n3, n4):
         qts1 = self.tab_2.findChild(QLineEdit, n1)
@@ -75,26 +165,25 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
         timearray = time.strptime(strs, "%Y-%m-%d %H:%M:%S")
         return int(time.mktime(timearray))
 
-
     def add(self):
         lineEdit = QtWidgets.QLineEdit(self.tab_2)
-        lineEdit.setGeometry(QtCore.QRect(20, self.i * 30 + 60, 130, 22))
+        lineEdit.setGeometry(QtCore.QRect(20, self.i * 30 + 60, 250, 22))
         lineEdit.setObjectName(str(self.i) + "_lineEdit")
-        lineEdit.setFixedWidth(130)
+        lineEdit.setFixedWidth(250)
 
         lineEdit2 = QtWidgets.QLineEdit(self.tab_2)
-        lineEdit2.setGeometry(QtCore.QRect(160, self.i * 30 + 60, 130, 22))
+        lineEdit2.setGeometry(QtCore.QRect(280, self.i * 30 + 60, 250, 22))
         lineEdit2.setObjectName(str(self.i) + "_2lineEdit")
-        lineEdit2.setFixedWidth(130)
+        lineEdit2.setFixedWidth(250)
 
         comboBox = QtWidgets.QComboBox(self.tab_2)
-        comboBox.setGeometry(QtCore.QRect(300, self.i * 30 + 60, 67, 23))
+        comboBox.setGeometry(QtCore.QRect(540, self.i * 30 + 60, 100, 23))
         comboBox.setObjectName(str(self.i) + "comboBox")
         comboBox.addItem("楼栋")
         comboBox.addItem("项目分期")
 
         pushButton = QtWidgets.QPushButton(self.tab_2)
-        pushButton.setGeometry(QtCore.QRect(380, self.i * 30 + 60, 75, 23))
+        pushButton.setGeometry(QtCore.QRect(650, self.i * 30 + 60, 75, 23))
         pushButton.setObjectName(str(self.i) +"pushButton_5")
         pushButton.setText("删除")
 
@@ -111,17 +200,18 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
     def calTableValue(self):
+        # 计算之前先清空表格
         self.tableWidget.setRowCount(0)
         self.tableWidget.clearContents()
-        # keep_default_na=False 防止出现nan值
-        data = self.data
+        cur_sel = self.comboBox_2.currentText()
+        data = self.data[self.data['维保阶段名称'] == cur_sel]
         dateStart = str(self.dateStart.dateTime().toPyDateTime())
         dateEnd = str(self.dateEnd.dateTime().toPyDateTime())
         select = self.comboBox_2.currentText()
         cal_group_name = self.comboBox_3.currentText()
         # cal_group = np.unique(data[cal_group_name].values).tolist()
         cal_group = set(data[cal_group_name].values)
-        print("cal_group:",cal_group)
+        print("cal_group:", cal_group)
         print(dateEnd)
         # 当期未关闭：根据“时间段”判断“列AA-报事时间”早于“结束时间”， 且“列L-当前工单状态”为“方案已批准”、“方案制定中”、“施工完成”、“施工中”、“已响应”的excel行数（即工单数）
         data_cur = data[(data["报事时间"] <= dateEnd) & ((data["当前工单状态"] == "方案已批准") |
@@ -200,6 +290,19 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
         # 当期维修关闭总时长
         data_time_notnull = data[((data["业主关闭时间"] != '') | (data["非正常关闭时间"] != '') | (data["强制关闭时间"] != '')) &
              (data["报事时间"] != '')]
+
+        group_name = []
+        cur_need_do_list = []
+        cur_increase_list = []
+        cur_close_list = []
+        cur_not_close_list = []
+        cur_close_rate_list = []
+        cur_year_close_rate_list = []
+        all_close_rate_list = []
+        indoor_rate_list = []
+        finish_rate_list = []
+        dur_lists = []
+        response_rate_list = []
 
         items = []
         for group in cal_group:
@@ -288,6 +391,19 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
             else:
                 pass
 
+            group_name.append(group)
+            cur_need_do_list.append(cur_need_do)
+            cur_increase_list.append(cur_increase)
+            cur_close_list.append(cur_close)
+            cur_not_close_list.append(cur_not_close)
+            cur_close_rate_list.append(cur_close_rate)
+            cur_year_close_rate_list.append(cur_year_close_rate)
+            all_close_rate_list.append(all_close_rate)
+            indoor_rate_list.append(indoor_rate)
+            finish_rate_list.append(finish_rate)
+            dur_lists.append(dur)
+            response_rate_list.append(response_rate)
+
             item.append(cur_need_do)
             item.append(cur_increase)
             item.append(cur_close)
@@ -308,6 +424,21 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
             for j in range(len(item)):
                 item = QTableWidgetItem(str(items[i][j]))
                 self.tableWidget.setItem(row, j, item)
+
+        self.pd_dict = {'分组名称': group_name,
+                        '当前需处理(条)': cur_need_do_list,
+                        '当前新增(条)': cur_increase_list,
+                        '当前关闭(条)': cur_close_list,
+                        '当前未关闭(条)': cur_not_close_list,
+                        '当前关闭率': cur_close_rate_list,
+                        '当年累计关闭率': cur_year_close_rate_list,
+                        '总体累计关闭率': all_close_rate_list,
+                        '当期上门及时率': indoor_rate_list,
+                        '当期施工完成及时率': finish_rate_list,
+                        '平均关单时长(小时)': dur_lists,
+                        '当期响应及时率': response_rate_list
+                   }
+        print("pd_dict:",self.pd_dict)
 
 
 if __name__ == '__main__':
