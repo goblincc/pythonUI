@@ -129,16 +129,11 @@
                <item>
                 <widget class="QComboBox" name="comboBox_2">
                  <property name="currentText">
-                  <string>集中交付期</string>
+                  <string>集中整改期</string>
                  </property>
                  <property name="maxVisibleItems">
                   <number>20</number>
                  </property>
-                 <item>
-                  <property name="text">
-                   <string>集中交付期</string>
-                  </property>
-                 </item>
                  <item>
                   <property name="text">
                    <string>集中整改期</string>
