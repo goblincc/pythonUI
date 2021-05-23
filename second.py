@@ -184,7 +184,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -229,7 +229,7 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "平均关单时长（小时）"))
         item = self.tableWidget.horizontalHeaderItem(11)
         item.setText(_translate("MainWindow", "当期响应及时率"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "隐藏"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "文件导入与计算"))
         self.pushButton_4.setText(_translate("MainWindow", "添加"))
         self.comboBox.setItemText(0, _translate("MainWindow", "楼栋"))
         self.comboBox.setItemText(1, _translate("MainWindow", "项目分期"))

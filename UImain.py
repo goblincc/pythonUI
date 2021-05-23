@@ -1,17 +1,20 @@
 import sys
-import openpyxl
 import second
-from PyQt5.QtWidgets import QApplication, QMainWindow, QHeaderView, QProgressBar,QTableWidgetItem,QMessageBox, QLineEdit, QFormLayout,QComboBox,QPushButton
-from PyQt5 import QtWidgets, QtCore, QtGui
-from PyQt5.QtCore import QBasicTimer
+from PyQt5.QtWidgets import QApplication, QTableWidgetItem, QMessageBox, QLineEdit, QComboBox, QPushButton
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtGui import QIcon
 import pandas as pd
 import datetime
 import time
 import os
+import xlrd
+import openpyxl
+import images
 
 class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
+        self.setWindowIcon(QIcon(':/ss.ico'))
         self.i = 1
         self.k = 0
         self.setupUi(self)
@@ -444,6 +447,7 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     mywindow = Window()
+    mywindow.setWindowTitle("物业管理计算系统")
     mywindow.show()
     sys.exit(app.exec_())
 

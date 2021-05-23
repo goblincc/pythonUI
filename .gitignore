@@ -3,3 +3,5 @@
 UImain.spec
 build/*
 dist/*
+Pipfile
+Pipfile.lock
