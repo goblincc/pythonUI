@@ -19,6 +19,8 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
         self.k = 0
         self.setupUi(self)
         self.path = ''
+        self.build_set = set()
+        self.project_set = set()
         # 一个按钮的点击事件，响应函数为 def msg(self):
         self.pushButton.clicked.connect(self.msg)
         self.pushButton_2.clicked.connect(self.calTableValue)
@@ -59,27 +61,34 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
     def submit(self):
+
         comboBox = self.comboBox_4.currentText()
         line = self.lineEdit_4.text()
+        if (comboBox == '楼栋' and line not in self.build_set) or (comboBox == '项目分期' and line not in self.project_set):
+            lineEdit = QtWidgets.QLineEdit(self.tab_3)
+            lineEdit.setGeometry(QtCore.QRect(10, self.k * 30 + 80, 200, 22))
+            lineEdit.setObjectName(str(self.k) + "j_lineEdit")
+            lineEdit.setText(comboBox + "#" + line)
+            lineEdit.setFixedWidth(350)
 
-        lineEdit = QtWidgets.QLineEdit(self.tab_3)
-        lineEdit.setGeometry(QtCore.QRect(10, self.k * 30 + 80, 200, 22))
-        lineEdit.setObjectName(str(self.k) + "j_lineEdit")
-        lineEdit.setText(comboBox + "#" + line)
-        lineEdit.setFixedWidth(350)
+            pushButton = QtWidgets.QPushButton(self.tab_3)
+            pushButton.setGeometry(QtCore.QRect(380, self.k * 30 + 80, 75, 23))
+            pushButton.setObjectName(str(self.k) + "j_pushButton")
+            pushButton.setText("删除")
 
-        pushButton = QtWidgets.QPushButton(self.tab_3)
-        pushButton.setGeometry(QtCore.QRect(380, self.k * 30 + 80, 75, 23))
-        pushButton.setObjectName(str(self.k) + "j_pushButton")
-        pushButton.setText("删除")
+            lineEdit.show()
+            pushButton.show()
 
-        lineEdit.show()
-        pushButton.show()
-
-        self.k += 1
-        n1 = lineEdit.objectName()
-        n2 = pushButton.objectName()
-        pushButton.clicked.connect(lambda: self.delete_tab3(n1, n2))
+            if comboBox == '楼栋':
+                self.build_set.add(line)
+            elif comboBox == '项目分期':
+                self.project_set.add(line)
+            self.k += 1
+            n1 = lineEdit.objectName()
+            n2 = pushButton.objectName()
+            pushButton.clicked.connect(lambda: self.delete_tab3(n1, n2))
+        else:
+            QMessageBox.warning(self, "提示", "数据重复提交, 请检查!")
 
     def save(self):
         # 替换数据条数记数
@@ -96,25 +105,29 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                 line1 = self.lineEdit_2.text()
                 line2 = self.lineEdit_3.text()
                 select = self.comboBox.currentText()
-
-            if select == "楼栋":
-                m_cnt += self.data[self.data['楼栋'] == line1]['楼栋'].count()
-                self.data['楼栋'] = self.data['楼栋'].apply(lambda x: line2 if x == line1 else x)
-            elif select == "项目分期":
-                line2s = line2.split("#")
-                m_cnt += self.data[(self.data['项目'] + self.data['项目分期']) == line1]['项目分期'].count()
-                self.data["项目"] = self.data.apply(lambda x: line2s[0] if (x['项目'] + x['项目分期']) == line1 else x['项目'], axis=1)
-                self.data["项目分期"] = self.data.apply(lambda x: line2s[1] if (x['项目'] + x['项目分期']) == line1 else x['项目分期'], axis=1)
+            if line1 != '':
+                if select == "楼栋":
+                    m_cnt += self.data[self.data['楼栋'] == line1]['楼栋'].count()
+                    self.data['楼栋'] = self.data['楼栋'].apply(lambda x: line2 if x == line1 else x)
+                elif select == "项目分期":
+                    line2s = line2.split("#")
+                    m_cnt += self.data[(self.data['项目'] + self.data['项目分期']) == line1]['项目分期'].count()
+                    self.data["项目"] = self.data.apply(lambda x: line2s[0] if (x['项目'] + x['项目分期']) == line1 else x['项目'], axis=1)
+                    self.data["项目分期"] = self.data.apply(lambda x: line2s[1] if (x['项目'] + x['项目分期']) == line1 else x['项目分期'], axis=1)
+            else:
+                pass
         # 集中整改替换
         for l in range(self.k):
-            line = self.tab_3.findChild(QLineEdit, str(l) + "j_lineEdit").text()
-            lines = line.split('#')
-            if lines[0] == '楼栋':
-                self.data['维保阶段名称'] = self.data['维保阶段名称'].apply(lambda x: '集中整改期' if x == lines[1] else x)
-                n_cnt += self.data[self.data['楼栋'] == lines[1]]['楼栋'].count()
-            elif lines[0] == '项目分期':
-                self.data['维保阶段名称'] = self.data.apply(lambda x: '集中整改期' if (x['项目'] + '#' + x['项目分期']) == line else x['维保阶段名称'], axis=1)
-                n_cnt += self.data[(self.data['项目'] + '#' + self.data['项目分期']) == line]['项目分期'].count()
+            if self.tab_3.findChild(QLineEdit, str(l) + "j_lineEdit") is not None:
+                line = self.tab_3.findChild(QLineEdit, str(l) + "j_lineEdit").text()
+                print("line:", line)
+                lines = line.split('#')
+                if lines[0] == '楼栋':
+                    self.data['维保阶段名称'] = self.data['维保阶段名称'].apply(lambda x: '集中整改期' if x == lines[1] else x)
+                    n_cnt += self.data[self.data['楼栋'] == lines[1]]['楼栋'].count()
+                elif lines[0] == '项目分期':
+                    self.data['维保阶段名称'] = self.data.apply(lambda x: '集中整改期' if (x['项目'] + '&' + x['项目分期']) == lines[1] else x['维保阶段名称'], axis=1)
+                    n_cnt += self.data[(self.data['项目'] + '&' + self.data['项目分期']) == lines[1]]['项目分期'].count()
         QMessageBox.information(self, "信息", "替换数据:" + str(m_cnt) + ";设置集中整改:" + str(n_cnt))
 
 
@@ -125,10 +138,16 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
         self.comboBox.deleteLater()
         self.pushButton_5.deleteLater()
 
-
     def delete_tab3(self, n1, n2):
         qts1 = self.tab_3.findChild(QLineEdit, n1)
         qts2 = self.tab_3.findChild(QPushButton, n2)
+        txt = qts1.text().split("#")[1]
+        print("self.project_set:", self.project_set)
+        print("qts1:", qts1.text())
+        if txt in self.build_set:
+            self.build_set.remove(txt)
+        if txt in self.project_set:
+            self.project_set.remove(txt)
         qts1.deleteLater()
         qts2.deleteLater()
 
@@ -281,15 +300,15 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
             data_all = data[(data["响应时间"] >= dateStart) & (data["响应时间"] <= dateEnd)]
             print("data_response:", data_response['当前工单状态'].count())
             print("data_all:", data_all['当前工单状态'].count())
-            # 当期上门及时工单: 根据“时间段”判断“列AH - 预约上门时间”包含在“开始时间”及“结束时间”之间，且“列AK - 上门超时”的值 < 0.01, 的excel行数（即工单数）
+            # 当期上门及时工单: 根据“时间段”判断“列AF - 实际上门时间”包含在“开始时间”及“结束时间”之间，且“列AK - 上门超时”的值 < 0.01, 的excel行数（即工单数）
             data_indoor = data[
-                (data["预约上门时间"] >= dateStart) & (data["预约上门时间"] <= dateEnd) & (data["上门超时（小时）\n实际上门时间 - 预约上门时间"]
+                (data["实际上门时间"] >= dateStart) & (data["实际上门时间"] <= dateEnd) & (data["上门超时（小时）\n实际上门时间 - 预约上门时间"]
                                                                                .apply(
                     lambda x: 0.0 if x == '' else float(x)) < 0.01)]
 
             print("data_indoor", data_indoor['当前工单状态'].count())
             # 当期上门及时率=⑫当期上门及时工单/当期预约上门工单（逻辑：根据“时间段”判断“列AH-预约上门时间”包含在“开始时间”及“结束时间”之间的excel行数（即工单数））
-            data_indoor_all = data[(data["预约上门时间"] >= dateStart) & (data["预约上门时间"] <= dateEnd)]
+            data_indoor_all = data[(data["预约上门时间"] >= dateStart) & (data["实际上门时间"] <= dateEnd)]
 
             print("data_indoor_all", data_indoor_all['当前工单状态'].count())
             # 当期施工及时完成工单 = 根据“时间段”判断“列AM - 实际完成时间”包含在“开始时间”及“结束时间”之间，且“列AM - 实际完成时间的值”减去“列AL - 预计完成时间的值”=值＜0.1, 的excel行数（即工单数）
@@ -681,7 +700,7 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                                     df_list.append(df2)
                     if df_list:
                         datas = pd.concat(df_list)
-                        self.cal(datas, cur_sel)
+                        self.cal(datas)
                     else:
                         QMessageBox.warning(self, "提示", "集中整改栏目没有提交数据！请提交后再计算~")
             elif cur_sel == '日常维保期':
