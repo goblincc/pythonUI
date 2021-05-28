@@ -2,11 +2,13 @@ import sys
 import second
 from PyQt5.QtWidgets import QApplication, QTableWidgetItem, QMessageBox, QLineEdit, QComboBox, QPushButton
 from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 import pandas as pd
 import datetime
 import time
 import os
+import pyperclip
 import xlrd
 import openpyxl
 import images
@@ -19,6 +21,7 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
         self.k = 0
         self.setupUi(self)
         self.path = ''
+        self.data = df = pd.DataFrame([])
         self.build_set = set()
         self.project_set = set()
         # 一个按钮的点击事件，响应函数为 def msg(self):
@@ -43,6 +46,8 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
             self.file_except()
         else:
             pd.DataFrame(self.pd_dict).to_excel(savePath)
+
+
 
     def export(self):
         path = QtWidgets.QFileDialog.getExistingDirectory()
@@ -91,44 +96,47 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
             QMessageBox.warning(self, "提示", "数据重复提交, 请检查!")
 
     def save(self):
-        # 替换数据条数记数
-        m_cnt = 0
-        # 设置集中整改条数记数
-        n_cnt = 0
-        # 规则替换
-        for j in range(self.i):
-            if j != 0:
-                line1 = self.tab_2.findChild(QLineEdit, str(j) + "_lineEdit").text()
-                line2 = self.tab_2.findChild(QLineEdit, str(j) + "_2lineEdit").text()
-                select = self.tab_2.findChild(QComboBox, str(j) + "comboBox").currentText()
-            else:
-                line1 = self.lineEdit_2.text()
-                line2 = self.lineEdit_3.text()
-                select = self.comboBox.currentText()
-            if line1 != '':
-                if select == "楼栋":
-                    m_cnt += self.data[self.data['楼栋'] == line1]['楼栋'].count()
-                    self.data['楼栋'] = self.data['楼栋'].apply(lambda x: line2 if x == line1 else x)
-                elif select == "项目分期":
-                    line2s = line2.split("#")
-                    m_cnt += self.data[(self.data['项目'] + self.data['项目分期']) == line1]['项目分期'].count()
-                    self.data["项目"] = self.data.apply(lambda x: line2s[0] if (x['项目'] + x['项目分期']) == line1 else x['项目'], axis=1)
-                    self.data["项目分期"] = self.data.apply(lambda x: line2s[1] if (x['项目'] + x['项目分期']) == line1 else x['项目分期'], axis=1)
-            else:
-                pass
-        # 集中整改替换
-        for l in range(self.k):
-            if self.tab_3.findChild(QLineEdit, str(l) + "j_lineEdit") is not None:
-                line = self.tab_3.findChild(QLineEdit, str(l) + "j_lineEdit").text()
-                print("line:", line)
-                lines = line.split('#')
-                if lines[0] == '楼栋':
-                    self.data['维保阶段名称'] = self.data['维保阶段名称'].apply(lambda x: '集中整改期' if x == lines[1] else x)
-                    n_cnt += self.data[self.data['楼栋'] == lines[1]]['楼栋'].count()
-                elif lines[0] == '项目分期':
-                    self.data['维保阶段名称'] = self.data.apply(lambda x: '集中整改期' if (x['项目'] + '&' + x['项目分期']) == lines[1] else x['维保阶段名称'], axis=1)
-                    n_cnt += self.data[(self.data['项目'] + '&' + self.data['项目分期']) == lines[1]]['项目分期'].count()
-        QMessageBox.information(self, "信息", "替换数据:" + str(m_cnt) + ";设置集中整改:" + str(n_cnt))
+        if self.data.empty:
+            QMessageBox.warning(self, "提示", "没有导入数据，请检查!")
+        else:
+            # 替换数据条数记数
+            m_cnt = 0
+            # 设置集中整改条数记数
+            n_cnt = 0
+            # 规则替换
+            for j in range(self.i):
+                if j != 0:
+                    line1 = self.tab_2.findChild(QLineEdit, str(j) + "_lineEdit").text()
+                    line2 = self.tab_2.findChild(QLineEdit, str(j) + "_2lineEdit").text()
+                    select = self.tab_2.findChild(QComboBox, str(j) + "comboBox").currentText()
+                else:
+                    line1 = self.lineEdit_2.text()
+                    line2 = self.lineEdit_3.text()
+                    select = self.comboBox.currentText()
+                if line1 != '':
+                    if select == "楼栋":
+                        m_cnt += self.data[self.data['楼栋'] == line1]['楼栋'].count()
+                        self.data['楼栋'] = self.data['楼栋'].apply(lambda x: line2 if x == line1 else x)
+                    elif select == "项目分期":
+                        line2s = line2.split("#")
+                        m_cnt += self.data[(self.data['项目'] + self.data['项目分期']) == line1]['项目分期'].count()
+                        self.data["项目"] = self.data.apply(lambda x: line2s[0] if (x['项目'] + x['项目分期']) == line1 else x['项目'], axis=1)
+                        self.data["项目分期"] = self.data.apply(lambda x: line2s[1] if (x['项目'] + x['项目分期']) == line1 else x['项目分期'], axis=1)
+                else:
+                    pass
+            # 集中整改替换
+            for l in range(self.k):
+                if self.tab_3.findChild(QLineEdit, str(l) + "j_lineEdit") is not None:
+                    line = self.tab_3.findChild(QLineEdit, str(l) + "j_lineEdit").text()
+                    # print("line:", line)
+                    lines = line.split('#')
+                    if lines[0] == '楼栋':
+                        self.data['维保阶段名称'] = self.data['维保阶段名称'].apply(lambda x: '集中整改期' if x == lines[1] else x)
+                        n_cnt += self.data[self.data['楼栋'] == lines[1]]['楼栋'].count()
+                    elif lines[0] == '项目分期':
+                        self.data['维保阶段名称'] = self.data.apply(lambda x: '集中整改期' if (x['项目'] + '&' + x['项目分期']) == lines[1] else x['维保阶段名称'], axis=1)
+                        n_cnt += self.data[(self.data['项目'] + '&' + self.data['项目分期']) == lines[1]]['项目分期'].count()
+            QMessageBox.information(self, "信息", "替换数据:" + str(m_cnt) + ";设置集中整改:" + str(n_cnt))
 
 
 
@@ -142,8 +150,8 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
         qts1 = self.tab_3.findChild(QLineEdit, n1)
         qts2 = self.tab_3.findChild(QPushButton, n2)
         txt = qts1.text().split("#")[1]
-        print("self.project_set:", self.project_set)
-        print("qts1:", qts1.text())
+        # print("self.project_set:", self.project_set)
+        # print("qts1:", qts1.text())
         if txt in self.build_set:
             self.build_set.remove(txt)
         if txt in self.project_set:
@@ -176,7 +184,7 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
     def string2Month(self, strs):
         date = datetime.datetime.strptime(strs, '%Y-%m-%d %H:%M:%S')
         month = str(int(date.strftime("%m")))
-        print(month)
+        # print(month)
         return month
 
     def string2Year(self, strs):
@@ -232,8 +240,12 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
             cal_group_name = self.comboBox_3.currentText()
             # cal_group = np.unique(data[cal_group_name].values).tolist()
             cal_group = set(data[cal_group_name].values)
-            print("cal_group:", cal_group)
-            print(dateEnd)
+            # print("cal_group:", cal_group)
+            # print(dateEnd)
+
+            data["业主关闭时间"] = data["业主关闭时间"].apply(lambda x: '0' if x == '' else x)
+            data["非正常关闭时间"] = data["非正常关闭时间"].apply(lambda x: '0' if x == '' else x)
+            data["强制关闭时间"] = data["强制关闭时间"].apply(lambda x: '0' if x == '' else x)
 
             # 当期未关闭：根据“时间段”判断“列AA-报事时间”早于“结束时间”， 且“列L-当前工单状态”为“方案已批准”、“方案制定中”、“施工完成”、“施工中”、“已响应”的excel行数（即工单数）
             data_cur = data[(data["报事时间"] <= dateEnd) & ((data["当前工单状态"] == "方案已批准") |
@@ -243,7 +255,7 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                                                          (data["当前工单状态"] == "已响应") |
                                                          (data["当前工单状态"] == "已分派") |
                                                          (data["当前工单状态"] == "已上门"))]
-            print(data_cur["当前工单状态"].count())
+            # print(data_cur["当前工单状态"].count())
 
             # 当期新增：根据“时间段”判断“列AA-报事时间”包含在“开始时间”及“结束时间”之间，且“列L-当前工单状态”为“方案已批准”、“方案制定中”、“施工完成”、“施工中”、“已响应”、“非正常关闭”、“强制关闭”、“已关闭”、“已评价”的excel行数（即工单数）
             data_increase = data[(data["报事时间"] >= dateStart) & (data["报事时间"] <= dateEnd) & ((data["当前工单状态"] == "方案已批准") |
@@ -258,7 +270,7 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                                                                                             (data["当前工单状态"] == "已分派") |
                                                                                             (data["当前工单状态"] == "已上门"))]
 
-            print("data_increase", data_increase["当前工单状态"].count())
+            # print("data_increase", data_increase["当前工单状态"].count())
 
             # 当期关闭：根据“时间段”判断“列AU-业主关闭时间”或“列AV-非正常关闭时间”或“列AW-强制关闭时间”（三列只可能有一列存在时间数据）包含在“开始时间”及“结束时间”之间，且“列L-当前工单状态”为“非正常关闭”、“强制关闭”、“已关闭”、“已评价”的excel行数（即工单数）
             data_close = data[(((data["业主关闭时间"] >= dateStart) & (data["业主关闭时间"] <= dateEnd)) |
@@ -268,7 +280,7 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                                           (data["当前工单状态"] == "强制关闭") |
                                           (data["当前工单状态"] == "已关闭") |
                                           (data["当前工单状态"] == "已评价"))]
-            print(data_close["当前工单状态"].count())
+            # print(data_close["当前工单状态"].count())
             # 当年累计关闭
             dateStartYear = self.string2Year(dateStart)
             dateEndYear = self.string2Year(dateEnd)
@@ -292,25 +304,25 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                                    (data["当前工单状态"] == "已关闭") |
                                    (data["当前工单状态"] == "已评价"))]
 
-            print("data_all_close", data_all_close['当前工单状态'].count())
+            # print("data_all_close", data_all_close['当前工单状态'].count())
             # 当期响应及时工单：根据“时间段”判断“列AC-响应时间”包含在“开始时间”及“结束时间”之间，且“列AD-受理至响应间隔时长”的值<0.51,的excel行数（即工单数）
             data_response = data[(data["响应时间"] >= dateStart) & (data["响应时间"] <= dateEnd) &
                                  (data["受理至响应间隔时长(小时)\n响应时间 - 受理时间"].apply(lambda x: 0.0 if x == '' else float(x)) < 0.51)]
 
             data_all = data[(data["响应时间"] >= dateStart) & (data["响应时间"] <= dateEnd)]
-            print("data_response:", data_response['当前工单状态'].count())
-            print("data_all:", data_all['当前工单状态'].count())
+            # print("data_response:", data_response['当前工单状态'].count())
+            # print("data_all:", data_all['当前工单状态'].count())
             # 当期上门及时工单: 根据“时间段”判断“列AF - 实际上门时间”包含在“开始时间”及“结束时间”之间，且“列AK - 上门超时”的值 < 0.01, 的excel行数（即工单数）
             data_indoor = data[
                 (data["实际上门时间"] >= dateStart) & (data["实际上门时间"] <= dateEnd) & (data["上门超时（小时）\n实际上门时间 - 预约上门时间"]
                                                                                .apply(
                     lambda x: 0.0 if x == '' else float(x)) < 0.01)]
 
-            print("data_indoor", data_indoor['当前工单状态'].count())
-            # 当期上门及时率=⑫当期上门及时工单/当期预约上门工单（逻辑：根据“时间段”判断“列AH-预约上门时间”包含在“开始时间”及“结束时间”之间的excel行数（即工单数））
-            data_indoor_all = data[(data["预约上门时间"] >= dateStart) & (data["实际上门时间"] <= dateEnd)]
+            # print("data_indoor", data_indoor['当前工单状态'].count())
+            # 当期上门及时率=⑫当期上门及时工单/当期实际上门工单（逻辑：根据“时间段”判断“列实际上门时间”包含在“开始时间”及“结束时间”之间的excel行数（即工单数））
+            data_indoor_all = data[(data["实际上门时间"] >= dateStart) & (data["实际上门时间"] <= dateEnd)]
 
-            print("data_indoor_all", data_indoor_all['当前工单状态'].count())
+            # print("data_indoor_all", data_indoor_all['当前工单状态'].count())
             # 当期施工及时完成工单 = 根据“时间段”判断“列AM - 实际完成时间”包含在“开始时间”及“结束时间”之间，且“列AM - 实际完成时间的值”减去“列AL - 预计完成时间的值”=值＜0.1, 的excel行数（即工单数）
             data_finish = data[(data["实际完成时间"] >= dateStart) & (data["实际完成时间"] <= dateEnd) &
                                ((data[data["实际完成时间"] != '']["实际完成时间"].apply(self.date2Timestamp) -
@@ -320,8 +332,13 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
             data_finish_all = data[(data["实际完成时间"] >= dateStart) & (data["实际完成时间"] <= dateEnd)]
 
             # 当期维修关闭总时长
-            data_time_notnull = data[((data["业主关闭时间"] != '') | (data["非正常关闭时间"] != '') | (data["强制关闭时间"] != '')) &
-                                     (data["报事时间"] != '')]
+            data_time_notnull = data[(((data["业主关闭时间"] >= dateStart) & (data["业主关闭时间"] <= dateEnd)) |
+                                     ((data["非正常关闭时间"] >= dateStart) & (data["非正常关闭时间"] <= dateEnd)) |
+                                     ((data["强制关闭时间"] >= dateStart) & (data["强制关闭时间"] <= dateEnd))) &
+                                     ((data["当前工单状态"] == "非正常关闭") |
+                                      (data["当前工单状态"] == "强制关闭") |
+                                      (data["当前工单状态"] == "已关闭") |
+                                      (data["当前工单状态"] == "已评价"))]
 
             group_name = []
             cur_need_do_list = []
@@ -355,7 +372,7 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                 response_cnt = 0
                 indoor_cnt = 0
                 finish_cnt = 0
-                print("group:", group)
+                # print("group:", group)
                 if cal_group_name == "项目分期":
                     pre_group = set(data[data[cal_group_name] == group]['项目'].values)
                     for pre in pre_group:
@@ -451,18 +468,22 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                         # 16.当期维修关闭总时长 平均时长
                         data_time_notnull_tmp = data_time_notnull[
                             (data_time_notnull[cal_group_name] == group) & (data_time_notnull['项目'] == pre)]
-                        data_dur = data_time_notnull_tmp["业主关闭时间"].apply(
-                            lambda x: 0 if x == '' else self.date2Timestamp(x)) + \
-                                   data_time_notnull_tmp["非正常关闭时间"].apply(
-                                       lambda x: 0 if x == '' else self.date2Timestamp(x)) + \
-                                   data_time_notnull_tmp["强制关闭时间"].apply(
-                                       lambda x: 0 if x == '' else self.date2Timestamp(x)) - \
-                                   data_time_notnull_tmp["报事时间"].apply(lambda x: 0 if x == '' else self.date2Timestamp(x))
+                        data_time_notnull_tmp = data_time_notnull_tmp.copy()
+                        data_time_notnull_tmp.loc[:, "业主关闭时间"] = data_time_notnull_tmp["业主关闭时间"].apply(
+                            lambda x: 0 if x == '0' else self.date2Timestamp(x))
+                        data_time_notnull_tmp.loc[:, "非正常关闭时间"] = data_time_notnull_tmp["非正常关闭时间"].apply(
+                            lambda x: 0 if x == '0' else self.date2Timestamp(x))
+                        data_time_notnull_tmp.loc[:, "强制关闭时间"] = data_time_notnull_tmp["强制关闭时间"].apply(
+                            lambda x: 0 if x == '0' else self.date2Timestamp(x))
+                        data_time_notnull_tmp.loc[:, "报事时间"] = data_time_notnull_tmp["报事时间"].apply(
+                            lambda x: 0 if x == '0' else self.date2Timestamp(x))
+                        data_dur = (data_time_notnull_tmp["业主关闭时间"] + data_time_notnull_tmp["非正常关闭时间"] +
+                                    data_time_notnull_tmp["强制关闭时间"] - data_time_notnull_tmp["报事时间"]) / 86400
                         dur_list = data_dur.tolist()
                         # print("dur_list", dur_list)
                         dur = 0
                         if len(dur_list) != 0:
-                            dur = round(sum(dur_list) / len(dur_list) / 1000 / 60 / 60, 2)
+                            dur = round(sum(dur_list) / len(dur_list), 2)
                         else:
                             pass
 
@@ -474,13 +495,13 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                         cur_close_rate_list.append(cur_close_rate)
                         cur_year_close_rate_list.append(cur_year_close_rate)
                         all_close_rate_list.append(all_close_rate)
+                        response_cnt_list.append(response_cnt)
+                        response_rate_list.append(response_rate)
+                        indoor_cnt_list.append(indoor_cnt)
                         indoor_rate_list.append(indoor_rate)
+                        finish_cnt_list.append(finish_cnt)
                         finish_rate_list.append(finish_rate)
                         dur_lists.append(dur)
-                        response_rate_list.append(response_rate)
-                        response_cnt_list.append(response_cnt)
-                        indoor_cnt_list.append(indoor_cnt)
-                        finish_cnt_list.append(finish_cnt)
 
                         item.append(cur_need_do)
                         item.append(cur_increase)
@@ -489,13 +510,13 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                         item.append(cur_close_rate)
                         item.append(cur_year_close_rate)
                         item.append(all_close_rate)
+                        item.append(response_cnt)
+                        item.append(response_rate)
+                        item.append(indoor_cnt)
                         item.append(indoor_rate)
+                        item.append(finish_cnt)
                         item.append(finish_rate)
                         item.append(dur)
-                        item.append(response_rate)
-                        item.append(response_cnt)
-                        item.append(indoor_cnt)
-                        item.append(finish_cnt)
 
                         items.append(item)
 
@@ -515,7 +536,7 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
 
                 else:
                     item = []
-                    print('group:', group)
+                    # print('group:', group)
                     item.append(group)
                     # 1.当前未关闭
                     data_cur_tmp = data_cur[data_cur[cal_group_name] == group]
@@ -582,7 +603,7 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                         indoor_rate = round(indoor_cnt / indoor_all_cnt, 4)
                     else:
                         pass
-                    print("indoor_cnt:", indoor_cnt, "indoor_all_cnt", indoor_all_cnt)
+                    # print("indoor_cnt:", indoor_cnt, "indoor_all_cnt", indoor_all_cnt)
 
                     # 14.当期施工及时完成工单
                     data_finish_tmp = data_finish[data_finish[cal_group_name] == group]
@@ -597,19 +618,26 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                     else:
                         pass
 
-                    print("finish_cnt:", finish_cnt, "finish_cnt_all", finish_cnt_all)
+                    # print("finish_cnt:", finish_cnt, "finish_cnt_all", finish_cnt_all)
 
                     # 16.当期维修关闭总时长 平均时长
                     data_time_notnull_tmp = data_time_notnull[data_time_notnull[cal_group_name] == group]
-                    data_dur = data_time_notnull_tmp["业主关闭时间"].apply(lambda x: 0 if x == '' else self.date2Timestamp(x)) + \
-                               data_time_notnull_tmp["非正常关闭时间"].apply(lambda x: 0 if x == '' else self.date2Timestamp(x)) + \
-                               data_time_notnull_tmp["强制关闭时间"].apply(lambda x: 0 if x == '' else self.date2Timestamp(x)) - \
-                               data_time_notnull_tmp["报事时间"].apply(lambda x: 0 if x == '' else self.date2Timestamp(x))
+                    data_time_notnull_tmp = data_time_notnull_tmp.copy()
+                    data_time_notnull_tmp.loc[:, "业主关闭时间"] = data_time_notnull_tmp["业主关闭时间"].apply(
+                        lambda x: 0 if x == '0' else self.date2Timestamp(x))
+                    data_time_notnull_tmp.loc[:, "非正常关闭时间"] = data_time_notnull_tmp["非正常关闭时间"].apply(
+                        lambda x: 0 if x == '0' else self.date2Timestamp(x))
+                    data_time_notnull_tmp.loc[:, "强制关闭时间"] = data_time_notnull_tmp["强制关闭时间"].apply(
+                        lambda x: 0 if x == '0' else self.date2Timestamp(x))
+                    data_time_notnull_tmp.loc[:, "报事时间"] = data_time_notnull_tmp["报事时间"].apply(
+                        lambda x: 0 if x == '0' else self.date2Timestamp(x))
+                    data_dur = (data_time_notnull_tmp["业主关闭时间"] + data_time_notnull_tmp["非正常关闭时间"] +
+                                data_time_notnull_tmp["强制关闭时间"] - data_time_notnull_tmp["报事时间"]) / 86400
                     dur_list = data_dur.tolist()
                     # print("dur_list", dur_list)
                     dur = 0
                     if len(dur_list) != 0:
-                        dur = round(sum(dur_list) / len(dur_list) / 1000 / 60 / 60, 2)
+                        dur = round(sum(dur_list) / len(dur_list), 2)
                     else:
                         pass
 
@@ -621,13 +649,13 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                     cur_close_rate_list.append(cur_close_rate)
                     cur_year_close_rate_list.append(cur_year_close_rate)
                     all_close_rate_list.append(all_close_rate)
+                    response_cnt_list.append(response_cnt)
+                    response_rate_list.append(response_rate)
+                    indoor_cnt_list.append(indoor_cnt)
                     indoor_rate_list.append(indoor_rate)
+                    finish_cnt_list.append(finish_cnt)
                     finish_rate_list.append(finish_rate)
                     dur_lists.append(dur)
-                    response_rate_list.append(response_rate)
-                    response_cnt_list.append(response_cnt)
-                    indoor_cnt_list.append(indoor_cnt)
-                    finish_cnt_list.append(finish_cnt)
 
                     item.append(cur_need_do)
                     item.append(cur_increase)
@@ -636,13 +664,13 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                     item.append(cur_close_rate)
                     item.append(cur_year_close_rate)
                     item.append(all_close_rate)
+                    item.append(response_cnt)
+                    item.append(response_rate)
+                    item.append(indoor_cnt)
                     item.append(indoor_rate)
+                    item.append(finish_cnt)
                     item.append(finish_rate)
                     item.append(dur)
-                    item.append(response_rate)
-                    item.append(response_cnt)
-                    item.append(indoor_cnt)
-                    item.append(finish_cnt)
 
                     items.append(item)
 
@@ -671,6 +699,43 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                     item = QTableWidgetItem(str(items[i][j]))
                     self.tableWidget.setItem(row, j, item)
 
+    def selected_tb_text(self, table_view):
+        try:
+            indexes = table_view.selectedIndexes()  # 获取表格对象中被选中的数据索引列表
+            indexes_dict = {}
+            for index in indexes:  # 遍历每个单元格
+                row, column = index.row(), index.column()  # 获取单元格的行号，列号
+                if row in indexes_dict.keys():
+                    indexes_dict[row].append(column)
+                else:
+                    indexes_dict[row] = [column]
+
+            # 将数据表数据用制表符(\t)和换行符(\n)连接，使其可以复制到excel文件中
+            text = ''
+            for row, columns in indexes_dict.items():
+                row_data = ''
+                for column in columns:
+                    data = table_view.item(row, column).text()
+                    if row_data:
+                        row_data = row_data + '\t' + data
+                    else:
+                        row_data = data
+
+                if text:
+                    text = text + '\n' + row_data
+                else:
+                    text = row_data
+            return text
+        except Exception as e:
+            QMessageBox.warning(self, "提示", "error!")
+
+    def keyPressEvent(self, event):  # 重写键盘监听事件
+        # 监听 CTRL+C 组合键，实现复制数据到粘贴板
+        if (event.key() == Qt.Key_C) and QApplication.keyboardModifiers() == Qt.ControlModifier:
+            text = self.selected_tb_text(self.tableWidget)  # 获取当前表格选中的数据
+            if text:
+                pyperclip.copy(text)  # 复制数据到粘贴板
+
 
     def calTableValue(self):
         if self.path == '':
@@ -688,21 +753,25 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                 else:
                     for p in range(self.k):
                         if self.tab_3.findChild(QLineEdit, str(p) + "j_lineEdit") is not None:
-                            line = self.tab_3.findChild(QLineEdit, str(p) + "j_lineEdit").text()
+                            line = self.tab_3.findChild(QLineEdit, str(p) + "j_lineEdit").text().strip()
                             lines = line.split('#')
-                            if lines[1] != '':
+                            if len(lines) >= 2:
                                 if lines[0] == '楼栋':
                                     df = self.data[self.data['楼栋'] == lines[1]]
                                     df_list.append(df)
                                 elif lines[0] == '项目分期':
                                     line2 = lines[1].split("&")
-                                    df2 = self.data[(self.data['项目'] == line2[0]) & (self.data['项目分期'] == line2[1])]
-                                    df_list.append(df2)
+                                    if len(line2) == 1:
+                                        QMessageBox.warning(self, "提示", "集中整改栏目输入有误，缺少&连接符号，请检查！")
+                                    else:
+                                        df2 = self.data[(self.data['项目'] == line2[0]) & (self.data['项目分期'] == line2[1])]
+                                        df_list.append(df2)
                     if df_list:
                         datas = pd.concat(df_list)
                         self.cal(datas)
                     else:
                         QMessageBox.warning(self, "提示", "集中整改栏目没有提交数据！请提交后再计算~")
+
             elif cur_sel == '日常维保期':
                 if self.k == 0:
                     pass
@@ -711,12 +780,17 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                         if self.tab_3.findChild(QLineEdit, str(p) + "j_lineEdit") is not None:
                             line = self.tab_3.findChild(QLineEdit, str(p) + "j_lineEdit").text()
                             lines = line.split('#')
-                            if lines[1] != '':
+                            if len(lines) >= 2:
                                 if lines[0] == '楼栋':
-                                    datas = self.data[self.data['楼栋'] != lines[1]]
+                                    datas = datas[datas['楼栋'] != lines[1]]
                                 elif lines[0] == '项目分期':
-                                    line2 = lines[1].split("&")
-                                    datas = self.data[(self.data['项目'] != line2[0]) & (self.data['项目分期'] != line2[1])]
+                                    if len(lines[1].split("&")) == 1:
+                                        QMessageBox.warning(self, "提示", "集中整改栏目输入有误，缺少&连接符号，请检查！")
+                                    else:
+                                        # 直接在dataframe中添加列，警告：A value is trying to be set on a copy of a slice from a DataFrame
+                                        datas = datas.copy()
+                                        datas.loc[:, "flag"] = datas.apply(lambda x: True if (x['项目'] + '&' + x['项目分期']) == lines[1] else False, axis=1)
+                                        datas = datas[datas['flag'] == False]
                 self.cal(datas)
 
 

@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>755</width>
+    <width>1060</width>
     <height>600</height>
    </rect>
   </property>
@@ -296,17 +296,7 @@
             </column>
             <column>
              <property name="text">
-              <string>当期上门及时率</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>当期施工完成及时率</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>平均关单时长（小时）</string>
+              <string>当期响应及时工单</string>
              </property>
             </column>
             <column>
@@ -316,17 +306,27 @@
             </column>
             <column>
              <property name="text">
-              <string>当期响应及时工单</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
               <string>当期上门及时工单</string>
              </property>
             </column>
             <column>
              <property name="text">
+              <string>当期上门及时率</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
               <string>当期施工及时完成工单</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>当期施工完成及时率</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>平均关单时长（天）</string>
              </property>
             </column>
            </widget>
@@ -515,7 +515,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>755</width>
+     <width>1060</width>
      <height>23</height>
     </rect>
    </property>
