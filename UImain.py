@@ -45,7 +45,11 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
         except:
             self.file_except()
         else:
-            pd.DataFrame(self.pd_dict).to_excel(savePath)
+            print(self.pd_dict)
+            pd.DataFrame(self.pd_dict, columns=['分组名称','当前需处理(条)','当前新增(条)','当前关闭(条)','当前未关闭(条)',
+                                                '当前关闭率','当年累计关闭率','总体累计关闭率','当期响应及时工单','当期响应及时率',
+                                                '当期上门及时工单','当期上门及时率','当期施工及时完成工单','当期施工完成及时率',
+                                                '平均关单时长(天)']).to_excel(savePath)
 
 
 
@@ -528,10 +532,13 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                                         '当前关闭率': cur_close_rate_list,
                                         '当年累计关闭率': cur_year_close_rate_list,
                                         '总体累计关闭率': all_close_rate_list,
+                                        '当期响应及时工单': response_cnt_list,
+                                        '当期响应及时率': response_rate_list,
+                                        '当期上门及时工单': indoor_cnt_list,
                                         '当期上门及时率': indoor_rate_list,
+                                        '当期施工及时完成工单': finish_cnt_list,
                                         '当期施工完成及时率': finish_rate_list,
-                                        '平均关单时长(小时)': dur_lists,
-                                        '当期响应及时率': response_rate_list
+                                        '平均关单时长(天)': dur_lists
                                         }
 
                 else:
@@ -682,15 +689,15 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                                     '当前关闭率': cur_close_rate_list,
                                     '当年累计关闭率': cur_year_close_rate_list,
                                     '总体累计关闭率': all_close_rate_list,
-                                    '当期上门及时率': indoor_rate_list,
-                                    '当期施工完成及时率': finish_rate_list,
-                                    '平均关单时长(小时)': dur_lists,
-                                    '当期响应及时率': response_rate_list,
                                     '当期响应及时工单': response_cnt_list,
+                                    '当期响应及时率': response_rate_list,
                                     '当期上门及时工单': indoor_cnt_list,
-                                    '当期施工及时完成工单': finish_cnt_list
+                                    '当期上门及时率': indoor_rate_list,
+                                    '当期施工及时完成工单': finish_cnt_list,
+                                    '当期施工完成及时率': finish_rate_list,
+                                    '平均关单时长(天)': dur_lists
                                     }
-
+            print(self.pd_dict)
             for i in range(len(items)):
                 item = items[i]
                 row = self.tableWidget.rowCount()
