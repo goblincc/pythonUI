@@ -350,7 +350,7 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                     cur_need_do = cur_not_close + cur_close
                     # print("cur_need_do:", cur_need_do)
                     # 5.当期关闭率 = 当期关闭/当期需处理
-                    if cur_need_do == 0
+                    if cur_need_do == 0:
                         cur_close_rate = round(cur_close / cur_need_do, 4)
                     else:
                         pass
@@ -506,7 +506,7 @@ class Window(second.Ui_MainWindow, QtWidgets.QMainWindow):
                 cur_need_do = cur_not_close + cur_close
 
                 # 5.当期关闭率 = 当期关闭/当期需处理
-                if cur_need_do == 0
+                if cur_need_do == 0:
                     cur_close_rate = round(cur_close / cur_need_do, 4)
                 else:
                     pass
