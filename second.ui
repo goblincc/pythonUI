@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>755</width>
+    <width>1060</width>
     <height>600</height>
    </rect>
   </property>
@@ -60,6 +60,13 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_2">
             <item>
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>开始时间</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QDateEdit" name="dateStart">
               <property name="dateTime">
                <datetime>
@@ -88,6 +95,13 @@
                </size>
               </property>
              </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>结束时间</string>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QDateEdit" name="dateEnd">
@@ -282,7 +296,27 @@
             </column>
             <column>
              <property name="text">
+              <string>当期响应及时工单</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>当期响应及时率</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>当期上门及时工单</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
               <string>当期上门及时率</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>当期施工及时完成工单</string>
              </property>
             </column>
             <column>
@@ -292,12 +326,7 @@
             </column>
             <column>
              <property name="text">
-              <string>平均关单时长（小时）</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>当期响应及时率</string>
+              <string>平均关单时长（天）</string>
              </property>
             </column>
            </widget>
@@ -486,8 +515,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>755</width>
-     <height>22</height>
+     <width>1060</width>
+     <height>23</height>
     </rect>
    </property>
   </widget>
