@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>755</width>
-    <height>600</height>
+    <width>1115</width>
+    <height>593</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -60,6 +60,13 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_2">
             <item>
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>开始时间</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QDateEdit" name="dateStart">
               <property name="dateTime">
                <datetime>
@@ -88,6 +95,13 @@
                </size>
               </property>
              </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>结束时间</string>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QDateEdit" name="dateEnd">
@@ -129,11 +143,16 @@
                <item>
                 <widget class="QComboBox" name="comboBox_2">
                  <property name="currentText">
-                  <string>集中整改期</string>
+                  <string>全部</string>
                  </property>
                  <property name="maxVisibleItems">
                   <number>20</number>
                  </property>
+                 <item>
+                  <property name="text">
+                   <string>全部</string>
+                  </property>
+                 </item>
                  <item>
                   <property name="text">
                    <string>集中整改期</string>
@@ -159,22 +178,12 @@
                 <widget class="QComboBox" name="comboBox_3">
                  <item>
                   <property name="text">
-                   <string>项目分期</string>
+                   <string>分期</string>
                   </property>
                  </item>
                  <item>
                   <property name="text">
-                   <string>责任维保工程师</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>楼栋</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>项目</string>
+                   <string>处理人</string>
                   </property>
                  </item>
                  <item>
@@ -242,62 +251,57 @@
            <widget class="QTableWidget" name="tableWidget">
             <column>
              <property name="text">
-              <string>分组名称</string>
+              <string>分组条件</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>当期需处理(条)</string>
+              <string>当期回访量</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>当前新增(条)</string>
+              <string>当期有效回访量</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>当前关闭(条)</string>
+              <string>当期有效回访率</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>当前未关闭(条)</string>
+              <string>当期回访满意工单量</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>当前关闭率</string>
+              <string>当期回访满意度</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>当年累计关闭率</string>
+              <string>当年累计有效回访量</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>总体累计关闭率</string>
+              <string>当年累计回访量</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>当期上门及时率</string>
+              <string>当年累计有效回访率</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>当期施工完成及时率</string>
+              <string>当年累计回访满意工单</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>平均关单时长（小时）</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>当期响应及时率</string>
+              <string>当年累计回访满意度</string>
              </property>
             </column>
            </widget>
@@ -486,7 +490,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>755</width>
+     <width>1115</width>
      <height>22</height>
     </rect>
    </property>
