@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(['UImain3.py'],
-             pathex=['E:\\MyUI\\pythonUI'],
+             pathex=['F:\\workspacePython\\UIProject'],
              binaries=[],
              datas=[],
              hiddenimports=[],

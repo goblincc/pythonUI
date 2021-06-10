@@ -46,7 +46,7 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
         except:
             self.file_except()
         else:
-            print(self.pd_dict)
+            # print(self.pd_dict)
             pd.DataFrame(self.pd_dict, columns=['分组条件','当期回访量','当期有效回访量','当期有效回访率','当期回访满意工单量',
                                                 '当期回访满意度','当年累计有效回访量','当年累计回访量','当年累计有效回访率','当年累计回访满意工单',
                                                 '当年累计回访满意度']).to_excel(savePath)
@@ -307,7 +307,7 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
                 cur_valid_visit_satisfy_year = 0
                 cur_valid_visit_stasify_year_rate = 0.0
 
-                print("group:", group)
+                # print("group:", group)
                 if cal_group_name == "分期":
                     pre_group = set(data[data[cal_group_name] == group]['项目'].values)
                     for pre in pre_group:
@@ -323,6 +323,7 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
                             (data_cur_valid_visit[cal_group_name] == group) & (data_cur_valid_visit['项目'] == pre)]
                         cur_valie_visit = data_cur_valid_visit_tmp["回访时间"].count()
 
+                        # print("cur_valie_visit:", cur_valie_visit)
                         # 3.当期有效回访率=②当期有效回访量/①当期回访量
                         if cur_visit != 0:
                             cur_valie_visit_rate = round(cur_valie_visit / cur_visit, 4)
@@ -341,6 +342,7 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
                             (data_cur_visit_year[cal_group_name] == group) & (data_cur_visit_year['项目'] == pre)]
                         cur_visit_year = data_cur_visit_year_tmp['回访时间'].count()
 
+                        # print("cur_visit_year:", cur_visit_year)
                         # 6.当年累计有效回访量
                         data_cur_valid_visit_year_tmp = data_cur_valid_visit_year[
                             (data_cur_valid_visit_year[cal_group_name] == group) & (
@@ -359,7 +361,7 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
 
                         # 9.当年累计回访满意度
                         if cur_valid_visit_year != 0:
-                            cur_valid_visit_stasify_year_rate = round(cur_valid_visit_stasify_year / cur_valid_visit_year, 4)
+                            cur_valid_visit_stasify_year_rate = round(cur_valid_visit_satisfy_year / cur_valid_visit_year, 4)
                         else:
                             pass
 
@@ -410,7 +412,7 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
                                         }
                 else:
                     item = []
-                    print('group:', group)
+                    # print('group:', group)
                     item.append(group)
 
                     # 1.当前回访量
