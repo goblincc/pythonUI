@@ -47,10 +47,9 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
             self.file_except()
         else:
             print(self.pd_dict)
-            pd.DataFrame(self.pd_dict, columns=['分组名称','当前需处理(条)','当前新增(条)','当前关闭(条)','当前未关闭(条)',
-                                                '当前关闭率','当年累计关闭率','总体累计关闭率','当期响应及时工单','当期响应及时率',
-                                                '当期上门及时工单','当期上门及时率','当期施工及时完成工单','当期施工完成及时率',
-                                                '平均关单时长(天)']).to_excel(savePath)
+            pd.DataFrame(self.pd_dict, columns=['分组条件','当期回访量','当期有效回访量','当期有效回访率','当期回访满意工单量',
+                                                '当期回访满意度','当年累计有效回访量','当年累计回访量','当年累计有效回访率','当年累计回访满意工单',
+                                                '当年累计回访满意度']).to_excel(savePath)
 
 
 
@@ -253,11 +252,11 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
 
             # ②当期有效回访量：根据“时间段”判断“列T - 回访时间”包含在“开始时间”及“结束时间”之间，且“列S - 回访状态”为“有效回访”的excel行数（即工单数）
             data_cur_valid_visit = data[
-                (data['回访时间'] <= dateEnd) & (data['回访时间'] >= dateStart) & (data['回访方式'] == '有效回访')]
+                (data['回访时间'] <= dateEnd) & (data['回访时间'] >= dateStart) & (data['回访状态'] == '有效回访')]
 
             # ④当期回访满意工单量：根据“时间段”判断“列T - 回访时间”包含在“开始时间”及“结束时间”之间，且“列S - 回访状态”为“有效回访”，且“列X - 您对本次维修总体的满意度感受如何？”为“非常满意”或“满意”的excel行数（即工单数）；
             data_cur_visit_satisfy = data[(data['回访时间'] <= dateEnd) & (data['回访时间'] >= dateStart) &
-                                          (data['回访方式'] == '有效回访') &
+                                          (data['回访状态'] == '有效回访') &
                                           ((data['您对本次维修总体的满意度感受如何？'] == '非常满意') |
                                            (data['您对本次维修总体的满意度感受如何？'] == '满意'))]
 
@@ -275,11 +274,11 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
 
             # ⑥当年累计有效回访量
             data_cur_valid_visit_year = data[
-                (data['回访时间'] <= dateEndYear) & (data['回访时间'] >= dateStartYear) & (data['回访方式'] == '有效回访')]
+                (data['回访时间'] <= dateEndYear) & (data['回访时间'] >= dateStartYear) & (data['回访状态'] == '有效回访')]
 
             # ⑧当年累计回访满意工单
             data_cur_valid_visit_satisfy_year = data[(data['回访时间'] <= dateEndYear) & (data['回访时间'] >= dateStartYear) &
-                                                     (data['回访方式'] == '有效回访') &
+                                                     (data['回访状态'] == '有效回访') &
                                                      ((data['您对本次维修总体的满意度感受如何？'] == '非常满意') |
                                                       (data['您对本次维修总体的满意度感受如何？'] == '满意'))]
 
@@ -309,7 +308,7 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
                 cur_valid_visit_stasify_year_rate = 0.0
 
                 print("group:", group)
-                if cal_group_name == "项目分期":
+                if cal_group_name == "分期":
                     pre_group = set(data[data[cal_group_name] == group]['项目'].values)
                     for pre in pre_group:
                         item = []
