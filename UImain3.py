@@ -123,9 +123,9 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
                         self.data['楼栋'] = self.data['楼栋'].apply(lambda x: line2 if x == line1 else x)
                     elif select == "项目分期":
                         line2s = line2.split("#")
-                        m_cnt += self.data[(self.data['项目'] + self.data['项目分期']) == line1]['项目分期'].count()
-                        self.data["项目"] = self.data.apply(lambda x: line2s[0] if (x['项目'] + x['项目分期']) == line1 else x['项目'], axis=1)
-                        self.data["项目分期"] = self.data.apply(lambda x: line2s[1] if (x['项目'] + x['项目分期']) == line1 else x['项目分期'], axis=1)
+                        m_cnt += self.data[(self.data['项目'] + self.data['分期']) == line1]['分期'].count()
+                        self.data["项目"] = self.data.apply(lambda x: line2s[0] if (x['项目'] + x['分期']) == line1 else x['项目'], axis=1)
+                        self.data["分期"] = self.data.apply(lambda x: line2s[1] if (x['项目'] + x['分期']) == line1 else x['分期'], axis=1)
                 else:
                     pass
             # 集中整改替换
@@ -135,11 +135,11 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
                     # print("line:", line)
                     lines = line.split('#')
                     if lines[0] == '楼栋':
-                        self.data['维保阶段名称'] = self.data['维保阶段名称'].apply(lambda x: '集中整改期' if x == lines[1] else x)
+                        self.data['维保阶段'] = self.data['维保阶段'].apply(lambda x: '集中整改期' if x == lines[1] else x)
                         n_cnt += self.data[self.data['楼栋'] == lines[1]]['楼栋'].count()
                     elif lines[0] == '项目分期':
-                        self.data['维保阶段名称'] = self.data.apply(lambda x: '集中整改期' if (x['项目'] + '&' + x['项目分期']) == lines[1] else x['维保阶段名称'], axis=1)
-                        n_cnt += self.data[(self.data['项目'] + '&' + self.data['项目分期']) == lines[1]]['项目分期'].count()
+                        self.data['维保阶段'] = self.data.apply(lambda x: '集中整改期' if (x['项目'] + '&' + x['分期']) == lines[1] else x['维保阶段'], axis=1)
+                        n_cnt += self.data[(self.data['项目'] + '&' + self.data['分期']) == lines[1]]['分期'].count()
             QMessageBox.information(self, "信息", "替换数据:" + str(m_cnt) + ";设置集中整改:" + str(n_cnt))
 
 
@@ -549,7 +549,12 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
         if (event.key() == Qt.Key_C) and QApplication.keyboardModifiers() == Qt.ControlModifier:
             text = self.selected_tb_text(self.tableWidget)  # 获取当前表格选中的数据
             if text:
-                pyperclip.copy(text)  # 复制数据到粘贴板
+                # pyperclip.copy(text)  # 复制数据到粘贴板
+                try:
+                    clipboard = QApplication.clipboard()
+                    clipboard.setText(text)  # 复制到粘贴板
+                except BaseException as e:
+                    print(e)
 
 
     def calTableValue(self):

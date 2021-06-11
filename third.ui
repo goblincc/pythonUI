@@ -448,11 +448,6 @@
         </property>
         <item>
          <property name="text">
-          <string>楼栋</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
           <string>项目分期</string>
          </property>
         </item>
@@ -491,7 +486,7 @@
      <x>0</x>
      <y>0</y>
      <width>1115</width>
-     <height>22</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>
