@@ -22,7 +22,7 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
         self.k = 0
         self.setupUi(self)
         self.path = ''
-        self.data = df = pd.DataFrame([])
+        self.data = pd.DataFrame([])
         self.build_set = set()
         self.project_set = set()
         # 一个按钮的点击事件，响应函数为 def msg(self):
@@ -235,8 +235,10 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
 
     def cal(self, datas):
         data = datas
-        dateStart = str(self.dateStart.dateTime().toPyDateTime())
-        dateEnd = str(self.dateEnd.dateTime().toPyDateTime())
+        dateStarts = str(self.dateStart.dateTime().toPyDateTime())
+        dateEnds = str(self.dateEnd.dateTime().toPyDateTime())
+        dateStart = dateStarts[0:10]
+        dateEnd = dateEnds[0:10]
         if dateStart > dateEnd:
             QMessageBox.warning(self, "提示", "选取时间有误！！！")
         else:
@@ -249,7 +251,7 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
 
             # ①当期回访量：根据“时间段”判断“列T - 回访时间”包含在“开始时间”及“结束时间”之间的excel行数（即工单数）；
             data_cur_visit = data[(data['回访时间'] <= dateEnd) & (data['回访时间'] >= dateStart)]
-
+            # print("data_cur_visit:", data_cur_visit['回访时间'].count())
             # ②当期有效回访量：根据“时间段”判断“列T - 回访时间”包含在“开始时间”及“结束时间”之间，且“列S - 回访状态”为“有效回访”的excel行数（即工单数）
             data_cur_valid_visit = data[
                 (data['回访时间'] <= dateEnd) & (data['回访时间'] >= dateStart) & (data['回访状态'] == '有效回访')]
@@ -261,8 +263,8 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
                                            (data['您对本次维修总体的满意度感受如何？'] == '满意'))]
 
             # ⑤当年累计回访量
-            dateStartYear = self.string2Year(dateStart)
-            dateEndYear = self.string2Year(dateEnd)
+            dateStartYear = self.string2Year(dateStarts)
+            dateEndYear = self.string2Year(dateEnds)
             if dateEndYear == dateStartYear:
                 dateEndYear = str(int(dateEndYear) + 1)
             elif dateEndYear > dateStartYear:
@@ -412,13 +414,10 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
                                         }
                 else:
                     item = []
-                    # print('group:', group)
                     item.append(group)
-
                     # 1.当前回访量
                     data_cur_tmp = data_cur_visit[data_cur_visit[cal_group_name] == group]
                     cur_visit = data_cur_tmp["回访时间"].count()
-                    # print("cur_not_close:", cur_not_close)
 
                     # 2.当前有效回访量
                     data_cur_valid_visit_tmp = data_cur_valid_visit[data_cur_valid_visit[cal_group_name] == group]
@@ -480,7 +479,7 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
                     item.append(cur_visit_year)
                     item.append(cur_valid_visit_year)
                     item.append(cur_valid_visit_year_rate)
-                    item.append(cur_valid_visit_satisfy_year)
+                    item.append(cur_valid_visit_stasify_year)
                     item.append(cur_valid_visit_stasify_year_rate)
 
                     items.append(item)
@@ -584,7 +583,7 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
                                     if len(line2) == 1:
                                         QMessageBox.warning(self, "提示", "集中整改栏目输入有误，缺少&连接符号，请检查！")
                                     else:
-                                        df2 = self.data[(self.data['项目'] == line2[0]) & (self.data['项目分期'] == line2[1])]
+                                        df2 = self.data[(self.data['项目'] == line2[0]) & (self.data['分期'] == line2[1])]
                                         df_list.append(df2)
                     if df_list:
                         datas = pd.concat(df_list)
@@ -609,7 +608,7 @@ class Window(third.Ui_MainWindow, QtWidgets.QMainWindow):
                                     else:
                                         # 直接在dataframe中添加列，警告：A value is trying to be set on a copy of a slice from a DataFrame
                                         datas = datas.copy()
-                                        datas.loc[:, "flag"] = datas.apply(lambda x: True if (x['项目'] + '&' + x['项目分期']) == lines[1] else False, axis=1)
+                                        datas.loc[:, "flag"] = datas.apply(lambda x: True if (x['项目'] + '&' + x['分期']) == lines[1] else False, axis=1)
                                         datas = datas[datas['flag'] == False]
                 self.cal(datas)
             elif cur_sel == '全部':
